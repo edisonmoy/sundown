@@ -1,5 +1,7 @@
 from flask import Flask, request, session
 from twilio.twiml.messaging_response import MessagingResponse
+from functools import wraps
+from twilio.request_validator import RequestValidator
 import boto3
 import re
 import sys
@@ -16,12 +18,11 @@ SECRET_KEY = 'a secret key'
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+ #  ================== AWS ==================
 
 clients = []
 def get_clients():
-    """
-    Get clients from DynamoDB
-    """
+    """Get clients from DynamoDB"""
 
     # Load AWS credentials
     ACCESS_ID = os.getenv("AWS_KEY")
@@ -40,10 +41,35 @@ def get_clients():
         clients.extend(response['Items'])
     return clients
 
+
+    #  ================== Twilio ==================
+
+def validate_twilio_request(f):
+    """Validates that incoming requests genuinely originated from Twilio"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Create an instance of the RequestValidator class
+        validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
+
+        # Validate the request using its URL, POST data,
+        # and X-TWILIO-SIGNATURE header
+        request_valid = validator.validate(
+            request.url,
+            request.form,
+            request.headers.get('X-TWILIO-SIGNATURE', ''))
+
+        # Continue processing the request if it's valid, return a 403 error if
+        # it's not
+        if request_valid:
+            return f(*args, **kwargs)
+        else:
+            return abort(403)
+    return decorated_function
+
+    #  ================== Sunset ==================
+
 def getPermissionsFromNumber(client_list, phone_number):
-    """
-    Get permission of client given phone number
-    """
+    """Get client permission level given phone number"""
     for i in range(len(client_list)):
         client = client_list[i]
         if client["Phone"] == phone_number:
@@ -61,9 +87,7 @@ def get_location_from_number(client_list,phone_number):
     return None
 
 def get_id_from_number(client_list, phone_number):
-    """
-    Get Id of client given phone number
-    """
+    """Get client Id given phone number"""
     for i in range(len(client_list)):
         client = client_list[i]
         if client["Phone"] == phone_number:
@@ -100,9 +124,7 @@ def update_city(client_num, new_city):
         return "City has been updated to " + new_city + '\n' + get_sunset(new_city)
 
 def address_to_coord(city_name):
-    """
-    Get coords of address
-    """
+    """Get coords of address"""
     geolocator = Nominatim(user_agent="sundown")
     location = geolocator.geocode(city_name)
     if location is None:
@@ -111,9 +133,7 @@ def address_to_coord(city_name):
 
 
 def generate_grid(coord_tuple):
-    """
-    Given coord tuple, create 3x3 grid
-    """
+    """Given coord tuple, create 3x3 grid"""
     lat = coord_tuple[0]
     lng = coord_tuple[1]
 
@@ -133,9 +153,7 @@ def generate_grid(coord_tuple):
 
 
 def get_sunset(address, from_grid=True):
-    """
-    Get sunset quality and parse into message
-    """
+    """Get sunset quality and parse into message"""
 
     # Load Sunburst API credentials
     EMAIL = os.getenv("SUNBURST_EMAIL")
@@ -228,17 +246,24 @@ def create_user(msg):
     """
     return "Currently unavailable"
 
+#  ================== Routes ==================
 
 # Route that serves all requests
 @app.route("/", methods=['GET', 'POST'])
-def hello1():
+def render_index():
+    return "Hello World"
+
+
+@app.route("/test", methods=['GET', 'POST'])
+def render_test():
     get_sunset("chatham nj")
     return "Hello World"
 
 
 
-@app.route("/sms", methods=['GET', 'POST'])
-def hello():
+@app.route("/sms", methods=['POST'])
+@validate_twilio_request
+def incoming_text():
     print(request.values, file=sys.stderr)
 
     # Fetch clients from DB
