@@ -8,6 +8,7 @@ import datetime
 from suntime import Sun, SunTimeException
 from dateutil import tz
 from geopy.geocoders import Nominatim, GeoNames
+import os
 
 
 # The session object makes use of a secret key.
@@ -15,17 +16,21 @@ SECRET_KEY = 'a secret key'
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-callers = {
-    "+19739759395": "Edison",
-}
 
-
+clients = []
 def get_clients():
     """
     Get clients from DynamoDB
     """
+
+    # Load AWS credentials
+    ACCESS_ID = os.getenv("AWS_KEY")
+    ACCESS_KEY = os.getenv("AWS_SECRET")
+
     dynamodb = boto3.resource('dynamodb',
-                          region_name="us-west-1"
+                            region_name="us-west-1",
+                            aws_access_key_id=ACCESS_ID,
+                            aws_secret_access_key= ACCESS_KEY
                           )
     table = dynamodb.Table('SunsetClients')
     response = table.scan()
@@ -35,32 +40,32 @@ def get_clients():
         clients.extend(response['Items'])
     return clients
 
-def getPermissionsFromNumber(clients, phone_number):
+def getPermissionsFromNumber(client_list, phone_number):
     """
     Get permission of client given phone number
     """
-    for i in range(len(clients)):
-        client = clients[i]
+    for i in range(len(client_list)):
+        client = client_list[i]
         if client["Phone"] == phone_number:
 	        return client["Role"]
     return None
 
-def get_location_from_number(clients, phone_number):
+def get_location_from_number(client_list,phone_number):
     """
     Get location of client given phone number
     """
-    for i in range(len(clients)):
-        client = clients[i]
+    for i in range(len(client_list)):
+        client = client_list[i]
         if client["Phone"] == phone_number:
             return client["Location"]
     return None
 
-def get_id_from_number(clients, phone_number):
+def get_id_from_number(client_list, phone_number):
     """
     Get Id of client given phone number
     """
-    for i in range(len(clients)):
-        client = clients[i]
+    for i in range(len(client_list)):
+        client = client_list[i]
         if client["Phone"] == phone_number:
             return client["Id"]
     return None
@@ -72,7 +77,7 @@ def update_city(client_num, new_city):
     update client's city in DB
     Return string with success or error
     """
-    curr_city = get_location_from_number(client_num)
+    curr_city = get_location_from_number(clients, client_num)
     if curr_city.lower() == new_city.lower():
         return "Current city is already " + curr_city
     else:
@@ -81,7 +86,7 @@ def update_city(client_num, new_city):
 
         table = boto3.resource('dynamodb').Table('SunsetClients')
         table.update_item(
-            Key={'Id': get_id_from_number(client_num)},
+            Key={'Id': get_id_from_number(clients, client_num)},
             UpdateExpression="set #KEY = :VALUE",
             ExpressionAttributeNames={
                 '#KEY': 'Location',
@@ -132,21 +137,23 @@ def get_sunset(address, from_grid=True):
     Get sunset quality and parse into message
     """
 
-    # Sunburst API login
-    email = "moyedison@gmail.com"
-    password = "saywhat??"
-
+    # Load Sunburst API credentials
+    EMAIL = os.getenv("SUNBURST_EMAIL")
+    PASSWORD = os.getenv("SUNBURST_PW")
     url = "https://sunburst.sunsetwx.com/v1/login"
-    payload = {"email": email, "password": password}
+
 
     # Get Sunburst API token via POST
-    res = requests.post(url, data=payload)
+    res = requests.post(url, auth=(EMAIL, PASSWORD))
+
+    # res = requests.post(url, data=payload)
     result = re.findall(r'token\":\"[0-9a-xA-Z-]*', res.text)
     token = "Bearer " + result[0][8:]
 
     # Get sunset quality via Sunburst GET
     headers = {"Authorization": token}
     url = "https://sunburst.sunsetwx.com/v1/quality"
+
 
     # Return if invalid coords
     coords = address_to_coord(address)
@@ -195,7 +202,8 @@ def get_sunset(address, from_grid=True):
     today_ss = sun.get_sunset_time()
 
     # Convert time zone
-    geolocator = GeoNames(username='moysauce18')
+    GEO_USERNAME = os.getnev("GEONAMES_USERNAME")
+    geolocator = GeoNames(username=GEO_USERNAME)
     timezone = geolocator.reverse_timezone(coords)
     from_zone = tz.gettz('UTC')
     to_zone = tz.gettz(str(timezone))
@@ -223,8 +231,18 @@ def create_user(msg):
 
 # Route that serves all requests
 @app.route("/", methods=['GET', 'POST'])
+def hello1():
+    get_sunset("chatham nj")
+    return "Hello World"
+
+
+
+@app.route("/sms", methods=['GET', 'POST'])
 def hello():
     print(request.values, file=sys.stderr)
+
+    # Fetch clients from DB
+    clients = get_clients()
 
     # If this is a valid response
     if request.values.get("Body"):
@@ -235,7 +253,7 @@ def hello():
 
         # Get requestor details
         client_num = request.values.get('From')
-        client_curr_city = get_location_from_number(client_num)
+        client_curr_city = get_location_from_number(clients, client_num)
 
         # Send response given input message
         if input_msg == 'refresh' or input_msg == 'update':
@@ -252,27 +270,9 @@ def hello():
         else:
             output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
                 client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
-
-
-    """
-    # Respond with the number of text messages sent between two parties.
-    # Increment the counter
-    counter = session.get('counter', 0)
-    counter += 1
-
-    # Save the new counter value in the session
-    session['counter'] = counter
-
-    from_number = request.values.get('From')
-    if from_number in callers:
-        name = callers[from_number]
     else:
-        name = "Friend"
+        output_msg = "Invalid request"
 
-    # Build our reply
-    message = '{} has messaged {} {} times.' \
-        .format(name, request.values.get('To'), counter)
-    """
 
     # Put it in a TwiML response
     resp = MessagingResponse()
