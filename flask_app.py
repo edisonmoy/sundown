@@ -12,15 +12,12 @@ from dateutil import tz
 from geopy.geocoders import Nominatim, GeoNames
 import os
 
-
-# The session object makes use of a secret key.
-SECRET_KEY = 'a secret key'
-app = Flask(__name__)
-app.config.from_object(__name__)
-
- #  ================== AWS ==================
-
+#  ================== Global Variables ==================
 clients = []
+
+#  ================== AWS ==================
+
+
 def get_clients():
     """Get clients from DynamoDB"""
 
@@ -29,10 +26,10 @@ def get_clients():
     ACCESS_KEY = os.getenv("AWS_SECRET")
 
     dynamodb = boto3.resource('dynamodb',
-                            region_name="us-west-1",
-                            aws_access_key_id=ACCESS_ID,
-                            aws_secret_access_key= ACCESS_KEY
-                          )
+                              region_name="us-west-1",
+                              aws_access_key_id=ACCESS_ID,
+                              aws_secret_access_key=ACCESS_KEY
+                              )
     table = dynamodb.Table('SunsetClients')
     response = table.scan()
     clients = response['Items']
@@ -41,8 +38,8 @@ def get_clients():
         clients.extend(response['Items'])
     return clients
 
-
     #  ================== Twilio ==================
+
 
 def validate_twilio_request(f):
     """Validates that incoming requests genuinely originated from Twilio"""
@@ -68,15 +65,17 @@ def validate_twilio_request(f):
 
     #  ================== Sunset ==================
 
+
 def getPermissionsFromNumber(client_list, phone_number):
     """Get client permission level given phone number"""
     for i in range(len(client_list)):
         client = client_list[i]
         if client["Phone"] == phone_number:
-	        return client["Role"]
+            return client["Role"]
     return None
 
-def get_location_from_number(client_list,phone_number):
+
+def get_location_from_number(client_list, phone_number):
     """
     Get location of client given phone number
     """
@@ -85,6 +84,7 @@ def get_location_from_number(client_list,phone_number):
         if client["Phone"] == phone_number:
             return client["Location"]
     return None
+
 
 def get_id_from_number(client_list, phone_number):
     """Get client Id given phone number"""
@@ -95,6 +95,8 @@ def get_id_from_number(client_list, phone_number):
     return None
 
 #
+
+
 def update_city(client_num, new_city):
     """
     Given name of city and client's number,
@@ -122,6 +124,7 @@ def update_city(client_num, new_city):
 
         )
         return "City has been updated to " + new_city + '\n' + get_sunset(new_city)
+
 
 def address_to_coord(city_name):
     """Get coords of address"""
@@ -160,7 +163,6 @@ def get_sunset(address, from_grid=True):
     PASSWORD = os.getenv("SUNBURST_PW")
     url = "https://sunburst.sunsetwx.com/v1/login"
 
-
     # Get Sunburst API token via POST
     res = requests.post(url, auth=(EMAIL, PASSWORD))
 
@@ -172,7 +174,6 @@ def get_sunset(address, from_grid=True):
     headers = {"Authorization": token}
     url = "https://sunburst.sunsetwx.com/v1/quality"
 
-
     # Return if invalid coords
     coords = address_to_coord(address)
     if coords == -1:
@@ -180,11 +181,10 @@ def get_sunset(address, from_grid=True):
 
     total = 0
 
-
     # Get coordinates and quality at each coord
     coords_list = []
 
-    #If calculate quality from grid, false if calculate from single coord
+    # If calculate quality from grid, false if calculate from single coord
     if from_grid:
         coords_list = generate_grid(coords)
         if len(coords_list) == 0:
@@ -239,6 +239,7 @@ def get_sunset(address, from_grid=True):
 
     return message
 
+
 def create_user(msg):
     """
     Create new user.
@@ -246,7 +247,11 @@ def create_user(msg):
     """
     return "Currently unavailable"
 
+
 #  ================== Routes ==================
+app = Flask(__name__)
+app.config.from_object(__name__)
+
 
 # Route that serves all requests
 @app.route("/", methods=['GET', 'POST'])
@@ -254,15 +259,22 @@ def render_index():
     return render_template("index.html")
 
 
+# Route for api tests
 @app.route("/api/test", methods=['GET', 'POST'])
 def render_test():
     get_sunset("chatham nj")
     return "Hello World"
 
-@app.route("/api/create",methods=['POST'])
+
+# Route that creates a new user
+@app.route("/api/create", methods=['POST'])
 def create_route():
+	print("=============Req", file=sys.stderr)
+	print(request.values, file=sys.stderr)
     return create_user(request.values)
 
+
+# Route that handles incoming SMS
 @app.route("/api/sms", methods=['POST'])
 @validate_twilio_request
 def incoming_text():
@@ -275,7 +287,7 @@ def incoming_text():
     if request.values.get("Body"):
         input_msg = request.values.get("Body")
 
-        #Clean string
+        # Clean string
         input_msg = input_msg.replace('+', ' ').lower().lstrip().rstrip()
 
         # Get requestor details
@@ -300,11 +312,8 @@ def incoming_text():
     else:
         output_msg = "Invalid request"
 
-
     # Put it in a TwiML response
     resp = MessagingResponse()
     resp.message(output_msg)
 
     return str(resp)
-
-
