@@ -1,4 +1,4 @@
-from flask import Flask, request, session
+from flask import Flask, request, session, render_template
 from twilio.twiml.messaging_response import MessagingResponse
 from functools import wraps
 from twilio.request_validator import RequestValidator
@@ -251,17 +251,19 @@ def create_user(msg):
 # Route that serves all requests
 @app.route("/", methods=['GET', 'POST'])
 def render_index():
-    return "Hello World"
+    return render_template("index.html")
 
 
-@app.route("/test", methods=['GET', 'POST'])
+@app.route("/api/test", methods=['GET', 'POST'])
 def render_test():
     get_sunset("chatham nj")
     return "Hello World"
 
+@app.route("/api/create",methods=['POST'])
+def create_route():
+    return create_user(request.values)
 
-
-@app.route("/sms", methods=['POST'])
+@app.route("/api/sms", methods=['POST'])
 @validate_twilio_request
 def incoming_text():
     print(request.values, file=sys.stderr)
