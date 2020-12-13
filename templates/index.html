@@ -1,21 +1,28 @@
 <!doctype html>
 <html lang="en-US">
-    <head>
-        <title>Sundown</title>
-        <meta charSet="UTF-8" />
-    </head>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
-  
-        * {  
-            font-family: 'Lato', sans-serif;
-        }
-    </style>
+<link>
+<title>Sundown</title>
+<meta charSet="UTF-8" />
+<link rel="stylesheet" href="style.css">
 
-    <body>
-        <h1>Sundown</h1>
-        <h2>Get text notifications of the sunset quality.</h2>
-        <form action="/api/create"><input type="text" id="phone" name="phone" placeholder="Phone Number"><input type="submit" value="Submit"> </form>
-        <p>Uses <a href="https://sunsetwx.com/" target="_blank">SunsetWX</a> to determine quality. </p>
-    </body>
+</head>
+
+<body>
+	<section>
+		<div class="section-container">
+			<h1>Sundown</h1>
+			<h2>Get text notifications of the sunset quality.</h2>
+			<div>
+				<input type="text" id="phone-input" name="phone" placeholder="Phone Number">
+				<button id="phone-submit">Submit</button>
+			</div>
+			<p>Uses <a href="https://sunsetwx.com/" target="_blank">SunsetWX</a> to determine quality. </p>
+		</div>
+	</section>
+	<!-- Load scripts at end for faster loads -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="script.js" async></script>
+</body>
+
+
 </html>
