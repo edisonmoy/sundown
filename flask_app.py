@@ -269,9 +269,7 @@ def render_test():
 # Route that creates a new user
 @app.route("/api/create", methods=['POST'])
 def create_route():
-	print("=============Req", file=sys.stderr)
-	print(request.values, file=sys.stderr)
-    return create_user(request.values)
+	return create_user(request.values.get("phone"))
 
 
 # Route that handles incoming SMS
