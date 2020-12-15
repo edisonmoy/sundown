@@ -50,8 +50,8 @@ def refresh_clients():
 
 def client_exists(phone_number):
     """Check if phone number exists in DB"""
-    for i in range(len(all_clients)):
-        client = all_clients[i]
+    for i in range(len(clients)):
+        client = clients[i]
         if client["Phone"] == phone_number:
             return True
     return False
