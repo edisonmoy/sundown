@@ -90,7 +90,7 @@ def update_row(clientId, key, value):
 
 def get_client_permission(phone_number):
     """Get client permission level given phone number"""
-    for i in range(len(client_list)):
+    for i in range(len(clients)):
         client = clients[i]
         if client["Phone"] == phone_number:
             return client["Role"]
@@ -99,7 +99,7 @@ def get_client_permission(phone_number):
 
 def get_client_location(phone_number):
     """Get location of client given phone number"""
-    for i in range(len(client_list)):
+    for i in range(len(clients)):
         client = clients[i]
         if client["Phone"] == phone_number:
             return client["Location"]
@@ -108,7 +108,7 @@ def get_client_location(phone_number):
 
 def get_client_id(phone_number):
     """Get client Id given phone number"""
-    for i in range(len(client_list)):
+    for i in range(len(clients)):
         client = clients[i]
         if client["Phone"] == phone_number:
             return client["Id"]
