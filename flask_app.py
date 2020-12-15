@@ -358,16 +358,16 @@ def incoming_text():
         # Clean string
         input_msg = input_msg.replace('+', ' ').lower().lstrip().rstrip()
 
-        # Timestamp of last received text
-        update_row(get_client_id(phone_number),
-                   "Last Received Message Timestamp", datetime.now())
-        update_row(get_client_id(phone_number),
-                   "Last Received Message", input_msg)
-
         # Get requestor details
         client_num = request.values.get('From')
         client_curr_city = get_client_location(client_num)
         client_role = get_client_role(client_num)
+
+        # Timestamp of last received text
+        update_row(get_client_id(client_num),
+                   "Last Received Message Timestamp", datetime.now())
+        update_row(get_client_id(client_num),
+                   "Last Received Message", input_msg)
 
         # Check if response is from account creation
         if client_role == 'Pending':
