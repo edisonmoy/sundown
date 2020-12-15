@@ -50,7 +50,6 @@ def refresh_clients():
 
 def client_exists(phone_number):
     """Check if phone number exists in DB"""
-    all_clients = get_clients()
     for i in range(len(all_clients)):
         client = all_clients[i]
         if client["Phone"] == phone_number:
@@ -317,6 +316,8 @@ app.config.from_object(__name__)
 # Route that serves all requests
 @ app.route("/", methods=['GET', 'POST'])
 def render_index():
+    # Fetch clients from DB
+    refresh_clients()
     return render_template("index.html")
 
 
