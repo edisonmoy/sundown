@@ -92,7 +92,7 @@ def get_client_role(phone_number):
     """Get client permission level given phone number"""
     for i in range(len(clients)):
         client = clients[i]
-        if client["Phone"] == phone_number and client.has_key("Role"):
+        if client["Phone"] == phone_number and "Role" in client:
             return client["Role"]
     return None
 
@@ -101,7 +101,7 @@ def get_client_location(phone_number):
     """Get location of client given phone number"""
     for i in range(len(clients)):
         client = clients[i]
-        if client["Phone"] == phone_number and client.has_key("Location"):
+        if client["Phone"] == phone_number and "Location" in client:
             return client["Location"]
     return None
 
