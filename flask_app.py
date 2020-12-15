@@ -306,7 +306,8 @@ def begin_onboard(phone_number):
 def finish_creation(phone_number, location):
     """Update user info and complete account creation"""
     # Timestamp of account creation finished
-    update_row(get_client_id(phone_number), "Account Created", datetime.now())
+    update_row(get_client_id(phone_number),
+               "Account Created", datetime.datetime.now())
     update_row(get_client_id(phone_number), "Role", "User")
 
     update_city(phone_number, location)
@@ -365,7 +366,7 @@ def incoming_text():
 
         # Timestamp of last received text
         update_row(get_client_id(client_num),
-                   "Last Received Message Timestamp", datetime.now())
+                   "Last Received Message Timestamp", datetime.datetime.now())
         update_row(get_client_id(client_num),
                    "Last Received Message", input_msg)
 
