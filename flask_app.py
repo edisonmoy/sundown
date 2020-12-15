@@ -19,7 +19,7 @@ import phonenumbers
 import uuid
 
 #  ================== Global Variables ==================
-global clients = []
+clients = []
 
 #  ================== AWS ==================
 
@@ -45,6 +45,7 @@ def refresh_clients():
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         all_clients.extend(response['Items'])
+    global clients
     clients = all_clients
     print("REFRESH clients", file=sys.stderr)
     print(clients, file=sys.stderr)
