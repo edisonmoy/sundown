@@ -88,7 +88,7 @@ def update_row(clientId, key, value):
     return response
 
 
-def get_client_permission(phone_number):
+def get_client_role(phone_number):
     """Get client permission level given phone number"""
     for i in range(len(clients)):
         client = clients[i]
