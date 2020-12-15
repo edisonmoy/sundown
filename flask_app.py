@@ -16,6 +16,7 @@ from dateutil import tz
 from geopy.geocoders import Nominatim, GeoNames
 import os
 import phonenumbers
+import uuid
 
 #  ================== Global Variables ==================
 clients = []
@@ -57,13 +58,14 @@ def client_exists(phone_number):
     return False
 
 
-def create_client(phone_number, location):
+def create_client(phone_number, role='', location=''):
     """Create new row in DB with client info"""
     table = db_client()
     response = table.put_item(
         Item={
+            'Id': str(uuid.uuid4()),
             'Number': phone_number,
-            'Role': 0,
+            'Role': role,
             'Location': location,
         }
     )
@@ -303,6 +305,8 @@ def finish_creation(phone_number, location):
     """Update user info and complete account creation"""
     # Timestamp of account creation finished
     update_row(get_client_id(phone_number), "Account Created", datetime.now())
+    update_row(get_client_id(phone_number), "Role", "User")
+
     update_city(phone_number, location)
     msg = "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
     send_msg(phone_number, msg)
@@ -353,9 +357,10 @@ def incoming_text():
         # Get requestor details
         client_num = request.values.get('From')
         client_curr_city = get_client_location(client_num)
+        client_role = get_client_role(client_num)
 
         # Check if response is from account creation
-        if client_curr_city == 'Pending':
+        if client_role == 'Pending':
             output_msg = finish_creation(input_msg)
         else:
             # Send response given input message
