@@ -336,7 +336,15 @@ def render_index():
 def create_route():
     # Fetch clients from DB
     refresh_clients()
-    return begin_onboard(request.values.get("phone"))
+
+    # Validate phone number
+    phone_number = request.values.get("phone")
+    phone_number_obj = phonenumbers.parse(phone_number, None)
+
+    if phonenumbers.is_valid_number(phone_number_obj):
+        return begin_onboard(phone_number)
+    else:
+        return "Invalid Number", 400
 
 
 # Route that handles incoming SMS
