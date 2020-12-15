@@ -367,8 +367,8 @@ def incoming_text():
                 output_msg = update_city(client_num, new_city)
 
             else:
-                output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' +
-                client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
+                output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
+                    client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
     else:
         output_msg = "Invalid request"
 
