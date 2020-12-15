@@ -19,6 +19,10 @@ section {
     color: red;
     font-size: 12px;
 }
-#error-container {
+#success-message {
+    color: green;
+    font-size: 12px;
+}
+#message-container {
     height: 15px;
 }
