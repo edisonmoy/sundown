@@ -47,16 +47,12 @@ def refresh_clients():
         all_clients.extend(response['Items'])
     global clients
     clients = all_clients
-    print("REFRESH clients", file=sys.stderr)
-    print(clients, file=sys.stderr)
 
     return all_clients
 
 
 def client_exists(phone_number):
     """Check if phone number exists in DB"""
-    print("EXISTS Clients:", file=sys.stderr)
-    print(clients, file=sys.stderr)
     for i in range(len(clients)):
         client = clients[i]
         if client["Phone"] == phone_number:
