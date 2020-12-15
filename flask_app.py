@@ -291,7 +291,7 @@ def begin_onboard(phone_number):
     """Send onboarding messages"""
     if client_exists(phone_number):
         msg = "Account with this phone number already exists. For more information, reply HELP."
-        send_msg(msg)
+        send_msg(phone_number, msg)
     else:
         create_client(phone_number, "Pending")
         msg = "Welcome to Sundown, the simple way to get daily notifications of the sunset quality."
