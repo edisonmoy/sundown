@@ -46,7 +46,6 @@ function displaySuccess(message) {
 }
 
 function displayError(message) {
-    console.log("exec");
     if (message == "INVALID_COUNTRY") {
         message = "Enter country code";
     }
