@@ -2,6 +2,7 @@ from flask import Flask, request, session, render_template
 
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
+from twilio.http.http_client import TwilioHttpClient
 from twilio.request_validator import RequestValidator
 
 from functools import wraps
