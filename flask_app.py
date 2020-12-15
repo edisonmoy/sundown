@@ -46,11 +46,16 @@ def refresh_clients():
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         all_clients.extend(response['Items'])
     clients = all_clients
+    print("REFRESH clients", file=sys.stderr)
+    print(clients, file=sys.stderr)
+
     return all_clients
 
 
 def client_exists(phone_number):
     """Check if phone number exists in DB"""
+    print("EXISTS Clients:", file=sys.stderr)
+    print(clients, file=sys.stderr)
     for i in range(len(clients)):
         client = clients[i]
         if client["Phone"] == phone_number:
@@ -64,7 +69,7 @@ def create_client(phone_number, role='', location=''):
     response = table.put_item(
         Item={
             'Id': str(uuid.uuid4()),
-            'Number': phone_number,
+            'Phone': phone_number,
             'Role': role,
             'Location': location,
         }
