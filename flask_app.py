@@ -267,7 +267,7 @@ def get_sunset(address, from_grid=True):
     today_ss = sun.get_sunset_time()
 
     # Convert time zone
-    GEO_USERNAME = os.getnev("GEONAMES_USERNAME")
+    GEO_USERNAME = os.getenv("GEONAMES_USERNAME")
     geolocator = GeoNames(username=GEO_USERNAME)
     timezone = geolocator.reverse_timezone(coords)
     from_zone = tz.gettz('UTC')
