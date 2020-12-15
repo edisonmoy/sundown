@@ -19,7 +19,7 @@ import phonenumbers
 import uuid
 
 #  ================== Global Variables ==================
-clients = []
+global clients = []
 
 #  ================== AWS ==================
 
