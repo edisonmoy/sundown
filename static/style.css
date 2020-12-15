@@ -1,18 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap");
 
 * {
-	font-family: "Lato", sans-serif;
+    font-family: "Lato", sans-serif;
 }
 section {
-	width: 100%;
+    width: 100%;
 }
 .section-container {
-	padding: 40px 15%;
+    padding: 40px 15%;
 }
 .title-container .title {
-	font-size: 32px;
+    font-size: 32px;
 }
 .title-container .subtitle {
-	font-size: 24px;
+    font-size: 24px;
 }
-.form-box-container [];
+#error-message {
+    color: red;
+    font-size: 12px;
+}
+#error-container {
+    height: 15px;
+}

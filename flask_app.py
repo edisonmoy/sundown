@@ -1,7 +1,10 @@
 from flask import Flask, request, session, render_template
+
 from twilio.twiml.messaging_response import MessagingResponse
-from functools import wraps
+from twilio.rest import Client
 from twilio.request_validator import RequestValidator
+
+from functools import wraps
 import boto3
 import re
 import sys
@@ -11,6 +14,7 @@ from suntime import Sun, SunTimeException
 from dateutil import tz
 from geopy.geocoders import Nominatim, GeoNames
 import os
+import phonenumbers
 
 #  ================== Global Variables ==================
 clients = []
@@ -18,10 +22,8 @@ clients = []
 #  ================== AWS ==================
 
 
-def get_clients():
-    """Get clients from DynamoDB"""
-
-    # Load AWS credentials
+def db_client():
+ # Load AWS credentials
     ACCESS_ID = os.getenv("AWS_KEY")
     ACCESS_KEY = os.getenv("AWS_SECRET")
 
@@ -30,7 +32,12 @@ def get_clients():
                               aws_access_key_id=ACCESS_ID,
                               aws_secret_access_key=ACCESS_KEY
                               )
-    table = dynamodb.Table('SunsetClients')
+    return dynamodb.Table('SunsetClients')
+
+
+def get_clients():
+    """Get clients from DynamoDB"""
+	table = db_client()
     response = table.scan()
     clients = response['Items']
     while 'LastEvaluatedKey' in response:
@@ -38,32 +45,28 @@ def get_clients():
         clients.extend(response['Items'])
     return clients
 
-    #  ================== Twilio ==================
+
+def client_exists(phone_number):
+	"""Check if phone number exists in DB"""
+	all_clients = get_clients()
+	for i in range(len(all_clients)):
+        client = all_clients[i]
+        if client["Phone"] == phone_number:
+			return True
+	return False
 
 
-def validate_twilio_request(f):
-    """Validates that incoming requests genuinely originated from Twilio"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Create an instance of the RequestValidator class
-        validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
-
-        # Validate the request using its URL, POST data,
-        # and X-TWILIO-SIGNATURE header
-        request_valid = validator.validate(
-            request.url,
-            request.form,
-            request.headers.get('X-TWILIO-SIGNATURE', ''))
-
-        # Continue processing the request if it's valid, return a 403 error if
-        # it's not
-        if request_valid:
-            return f(*args, **kwargs)
-        else:
-            return abort(403)
-    return decorated_function
-
-    #  ================== Sunset ==================
+def create_client(phone_number, location):
+	"""Create new row in DB with client info"""
+	table = db_client()
+	response = table.put_item(
+		Item={
+			'Number': phone_number,
+			'Role': 0,
+			'Location': location,
+		}
+	)
+	return response
 
 
 def getPermissionsFromNumber(client_list, phone_number):
@@ -94,7 +97,45 @@ def get_id_from_number(client_list, phone_number):
             return client["Id"]
     return None
 
-#
+#  ================== Twilio ==================
+
+
+def validate_twilio_request(f):
+    """Validates that incoming requests genuinely originated from Twilio"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Create an instance of the RequestValidator class
+        validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
+
+        # Validate the request using its URL, POST data,
+        # and X-TWILIO-SIGNATURE header
+        request_valid = validator.validate(
+            request.url,
+            request.form,
+            request.headers.get('X-TWILIO-SIGNATURE', ''))
+
+        # Continue processing the request if it's valid, return a 403 error if
+        # it's not
+        if request_valid:
+            return f(*args, **kwargs)
+        else:
+            return abort(403)
+    return decorated_function
+
+
+def send_msg(phone_number, msg):
+	"""Send text MSG to PHONE_NUM"""
+    client = Client(os.getenv("TWILIO_AUTH_SID"),
+                    os.getenv("TWILIO_AUTH_TOKEN"))
+    client.messages.create(
+        body=msg,
+        from_='++18057068922',
+        to=phone_number
+    )
+    return '"{}" sent to {}'.format(msg, phone_number)
+
+
+#  ================== Sunset ==================
 
 
 def update_city(client_num, new_city):
@@ -240,12 +281,23 @@ def get_sunset(address, from_grid=True):
     return message
 
 
-def create_user(msg):
-    """
-    Create new user.
-    If requestor is admin, update DB with new record
-    """
-    return "Currently unavailable"
+#  ================== Account Creation ==================
+
+def begin_onboard(phone_number):
+	"""Send onboarding messages"""
+	create_client(phone_number, "Pending")
+	msg = "Welcome to Sundown, the simple way to get daily notifications of the sunset quality."
+	send_msg(phone_number, msg)
+	msg = "To begin, please respond with the name of your town or city:"
+	send_msg(phone_number, msg)
+
+
+def finish_creation(phone_number, location):
+	"""Update user info and complete account creation"""
+	update_city(phone_number, location)
+	msg = "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
+	send_msg(phone_number, msg)
+
 
 
 #  ================== Routes ==================
@@ -259,24 +311,16 @@ def render_index():
     return render_template("index.html")
 
 
-# Route for api tests
-@app.route("/api/test", methods=['GET', 'POST'])
-def render_test():
-    get_sunset("chatham nj")
-    return "Hello World"
-
-
 # Route that creates a new user
 @app.route("/api/create", methods=['POST'])
 def create_route():
-	return create_user(request.values.get("phone"))
+    return begin_onboard(request.values.get("phone"))
 
 
 # Route that handles incoming SMS
 @app.route("/api/sms", methods=['POST'])
 @validate_twilio_request
 def incoming_text():
-    print(request.values, file=sys.stderr)
 
     # Fetch clients from DB
     clients = get_clients()
@@ -291,22 +335,24 @@ def incoming_text():
         # Get requestor details
         client_num = request.values.get('From')
         client_curr_city = get_location_from_number(clients, client_num)
+		
+		# Check if response is from account creation
+		if client_curr_city == 'Pending':
+			output_msg = finish_creation(input_msg)
+		else:
+       		# Send response given input message
+			if input_msg == 'refresh' or input_msg == 'update' or
+			input_msg == 'sunset' or input_msg == "sundown":
+				output_msg = get_sunset(client_curr_city, True)
 
-        # Send response given input message
-        if input_msg == 'refresh' or input_msg == 'update':
-            output_msg = get_sunset(client_curr_city, True)
+			elif 'change city to' in input_msg:
+				new_city = re.findall(
+					r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
+				output_msg = update_city(client_num, new_city)
 
-        elif 'change city to' in input_msg:
-            new_city = re.findall(
-                r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
-            output_msg = update_city(client_num, new_city)
-
-        elif 'create' in input_msg:
-            output_msg = create_user(input_msg)
-
-        else:
-            output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
-                client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
+			else:
+				output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
+					client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
     else:
         output_msg = "Invalid request"
 
