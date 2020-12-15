@@ -36,15 +36,16 @@ def db_client():
     return dynamodb.Table('SunsetClients')
 
 
-def get_clients():
+def refresh_clients():
     """Get clients from DynamoDB"""
     table = db_client()
     response = table.scan()
-    clients = response['Items']
+    all_clients = response['Items']
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        clients.extend(response['Items'])
-    return clients
+        all_clients.extend(response['Items'])
+    clients = all_clients
+    return all_clients
 
 
 def client_exists(phone_number):
@@ -70,30 +71,42 @@ def create_client(phone_number, location):
     return response
 
 
-def getPermissionsFromNumber(client_list, phone_number):
+def update_row(clientId, key, value):
+    table = db_client()
+    response = table.update_item(
+        Key={'Id': clientId},
+        UpdateExpression="set #KEY = :VALUE",
+        ExpressionAttributeNames={
+            '#KEY': key,
+        },
+        ExpressionAttributeValues={
+            ':VALUE': value
+        }, ReturnValues="UPDATED_NEW")
+    return response
+
+
+def get_client_permission(phone_number):
     """Get client permission level given phone number"""
     for i in range(len(client_list)):
-        client = client_list[i]
-        if client["Phone"] == phone_number:
-            return client["Role"]
+    client = clients[i]
+    if client["Phone"] == phone_number:
+    return client["Role"]
     return None
 
 
-def get_location_from_number(client_list, phone_number):
-    """
-    Get location of client given phone number
-    """
+def get_client_location(phone_number):
+    """Get location of client given phone number"""
     for i in range(len(client_list)):
-        client = client_list[i]
+        client = clients[i]
         if client["Phone"] == phone_number:
             return client["Location"]
     return None
 
 
-def get_id_from_number(client_list, phone_number):
+def get_client_id(phone_number):
     """Get client Id given phone number"""
     for i in range(len(client_list)):
-        client = client_list[i]
+        client = clients[i]
         if client["Phone"] == phone_number:
             return client["Id"]
     return None
@@ -103,7 +116,7 @@ def get_id_from_number(client_list, phone_number):
 
 def validate_twilio_request(f):
     """Validates that incoming requests genuinely originated from Twilio"""
-    @wraps(f)
+    @ wraps(f)
     def decorated_function(*args, **kwargs):
         # Create an instance of the RequestValidator class
         validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
@@ -138,7 +151,6 @@ def send_msg(phone_number, msg):
     )
     return '"{}" sent to {}'.format(msg, phone_number)
 
-
 #  ================== Sunset ==================
 
 
@@ -148,27 +160,14 @@ def update_city(client_num, new_city):
     update client's city in DB
     Return string with success or error
     """
-    curr_city = get_location_from_number(clients, client_num)
+    curr_city = get_client_location(client_num)
     if curr_city.lower() == new_city.lower():
         return "Current city is already " + curr_city
     else:
         if (address_to_coord(new_city) == -1):
             return "Invalid city. Current city is " + curr_city
-
-        table = boto3.resource('dynamodb').Table('SunsetClients')
-        table.update_item(
-            Key={'Id': get_id_from_number(clients, client_num)},
-            UpdateExpression="set #KEY = :VALUE",
-            ExpressionAttributeNames={
-                '#KEY': 'Location',
-            },
-            ExpressionAttributeValues={
-                ':VALUE': new_city
-            },
-            ReturnValues="UPDATED_NEW",
-
-        )
-        return "City has been updated to " + new_city + '\n' + get_sunset(new_city)
+        update_row(get_client_id(client_num), 'Location', new_city)
+    return "City has been updated to " + new_city + '\n' + get_sunset(new_city)
 
 
 def address_to_coord(city_name):
@@ -303,6 +302,8 @@ def begin_onboard(phone_number):
 
 def finish_creation(phone_number, location):
     """Update user info and complete account creation"""
+    # Timestamp of account creation finished
+    update_row(get_client_id(phone_number), "Account Created", datetime.now())
     update_city(phone_number, location)
     msg = "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
     send_msg(phone_number, msg)
@@ -314,35 +315,43 @@ app.config.from_object(__name__)
 
 
 # Route that serves all requests
-@app.route("/", methods=['GET', 'POST'])
+@ app.route("/", methods=['GET', 'POST'])
 def render_index():
     return render_template("index.html")
 
 
 # Route that creates a new user
-@app.route("/api/create", methods=['POST'])
+@ app.route("/api/create", methods=['POST'])
 def create_route():
+    # Fetch clients from DB
+    refresh_clients()
     return begin_onboard(request.values.get("phone"))
 
 
 # Route that handles incoming SMS
-@app.route("/api/sms", methods=['POST'])
-@validate_twilio_request
+@ app.route("/api/sms", methods=['POST'])
+@ validate_twilio_request
 def incoming_text():
 
     # Fetch clients from DB
-    clients = get_clients()
+    refresh_clients()
 
     # If this is a valid response
     if request.values.get("Body"):
-        input_msg = request.values.get("Body")
 
+        input_msg = request.values.get("Body")
         # Clean string
         input_msg = input_msg.replace('+', ' ').lower().lstrip().rstrip()
 
+        # Timestamp of last received text
+        update_row(get_client_id(phone_number),
+                   "Last Received Message Timestamp", datetime.now())
+        update_row(get_client_id(phone_number),
+                   "Last Received Message", input_msg)
+
         # Get requestor details
         client_num = request.values.get('From')
-        client_curr_city = get_location_from_number(clients, client_num)
+        client_curr_city = get_client_location(client_num)
 
         # Check if response is from account creation
         if client_curr_city == 'Pending':
@@ -358,8 +367,8 @@ def incoming_text():
                 output_msg = update_city(client_num, new_city)
 
             else:
-                output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
-                    client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
+                output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' +
+                client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
     else:
         output_msg = "Invalid request"
 
