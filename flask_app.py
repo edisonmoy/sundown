@@ -88,9 +88,9 @@ def update_row(clientId, key, value):
 def get_client_permission(phone_number):
     """Get client permission level given phone number"""
     for i in range(len(client_list)):
-    client = clients[i]
-    if client["Phone"] == phone_number:
-    return client["Role"]
+        client = clients[i]
+        if client["Phone"] == phone_number:
+            return client["Role"]
     return None
 
 
