@@ -372,7 +372,7 @@ def incoming_text():
 
         # Check if response is from account creation
         if client_role == 'Pending':
-            output_msg = finish_creation(input_msg)
+            output_msg = finish_creation(client_num, input_msg)
         else:
             # Send response given input message
             if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
