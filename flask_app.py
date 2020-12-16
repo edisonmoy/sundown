@@ -382,12 +382,13 @@ def incoming_text():
                 new_city = re.findall(
                     r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
                 output_msg = update_city(client_num, new_city)
-
+            elif:
+                input_msg == "help" | | input_msg == 'info':
+                return
             else:
-                output_msg = 'Text REFRESH for the latest sunset prediction.\n Current City: ' + \
-                    client_curr_city+'\n To change current city, text CHANGE CITY TO NEW YORK, NY'
+                output_msg = "Sorry, we can't process your message. Reply HELP for more options."
     else:
-        output_msg = "Invalid request"
+        output_msg = "Sorry, we can't process your message. Reply HELP for more options."
 
     # Put it in a TwiML response
     resp = MessagingResponse()
