@@ -27,13 +27,15 @@
 					<div class="form-box">
 						<div class="form-box-container">
 							<h2 class="form-title">Get Started</h2>
-							<div>
+							<div class="form-row">
 								<select name="country-code" id="country-code">
 									<option value="US">+1</option>
 									<option value=null>Other</option>
 								</select>
 								<input type="text" id="phone-input" name="phone" placeholder="Phone Number">
-								<button id="phone-submit">Submit</button>
+								<button id="phone-submit" class="g-recaptcha"
+									data-sitekey="6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7" data-callback='onSubmit'
+									data-action='submit'>Submit</button>
 							</div>
 							<div id="message-container">
 								<span id="success-message"></span>
@@ -64,6 +66,7 @@
 	<!-- Load scripts at end for faster loads -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="https://unpkg.com/libphonenumber-js@1.9.6/bundle/libphonenumber-min.js"></script>
+	<script src="https://www.google.com/recaptcha/api.js"></script>
 	<script src="../static/script.js" async></script>
 </body>
 
