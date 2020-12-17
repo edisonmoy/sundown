@@ -31,6 +31,8 @@ def validate_recaptcha(token):
     res = requests.post(url, params=payload)
     print("=====Res=========", file=sys.stderr)
     print(res, file=sys.stderr)
+    print(res.text, file=sys.stderr)
+
     return res["success"]
 
     #  ================== AWS ==================
