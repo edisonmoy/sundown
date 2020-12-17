@@ -21,11 +21,18 @@ $("#phone-submit").click(function () {
         displayError(err.message);
     }
 
-    function submit(phoneNumber) {
+    async function submit(phoneNumber) {
+        // Get reCaptcha token
+        token = await grecaptcha.ready(function () {
+            grecaptcha.execute("reCAPTCHA_site_key", { action: "submit" });
+        });
+
+        console.log("token: ", token);
+
         $.ajax({
             type: "POST",
             url: "https://moysauce18.pythonanywhere.com/api/create",
-            data: { phone: phoneNumber },
+            data: { phone: phoneNumber, recaptcha_token: token },
             success: function () {
                 displaySuccess(
                     "Success. You will receive a text message with next steps."
@@ -79,7 +86,3 @@ $("#phone-input").on("propertychange input", function (e) {
         }
     }
 });
-
-function onSubmit(token) {
-    document.getElementById("demo-form").submit();
-}
