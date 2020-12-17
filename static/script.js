@@ -23,10 +23,13 @@ $("#phone-submit").click(function () {
 
     async function submit(phoneNumber) {
         // Get reCaptcha token
-        token = await grecaptcha.ready(function () {
-            grecaptcha.execute("6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7", {
-                action: "submit",
-            });
+        token = await grecaptcha.ready(async function () {
+            await grecaptcha.execute(
+                "6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7",
+                {
+                    action: "submit",
+                }
+            );
         });
 
         console.log("token: ", token);
