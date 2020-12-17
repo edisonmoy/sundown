@@ -1,3 +1,4 @@
+// Submit button handler
 $("#phone-submit").click(function () {
     var inputVal = $("#phone-input").val();
 
@@ -9,18 +10,18 @@ $("#phone-submit").click(function () {
             inputVal,
             selectedCode
         );
-
         isValid = phoneNumberObj.isValid();
+
         if (isValid) {
             submit(phoneNumberObj.number);
         } else {
             displayError("Invalid phone number.");
         }
     } catch (err) {
-        console.log(err);
         displayError(err.message);
     }
 
+    // Submit phone number to DB
     async function submit(phoneNumber) {
         // Get reCaptcha token
         grecaptcha.ready(function () {
@@ -33,7 +34,10 @@ $("#phone-submit").click(function () {
                     $.ajax({
                         type: "POST",
                         url: "https://moysauce18.pythonanywhere.com/api/create",
-                        data: { phone: phoneNumber, recaptcha_token: token },
+                        data: {
+                            phone: phoneNumber,
+                            recaptcha_token: token,
+                        },
                         success: function () {
                             displaySuccess(
                                 "Success. You will receive a text message with next steps."
@@ -45,16 +49,21 @@ $("#phone-submit").click(function () {
                             console.error(error);
                         },
                     });
+                })
+                .catch(function (err) {
+                    displayError(err.message);
                 });
         });
     }
 });
 
+// Show message on successful form complete
 function displaySuccess(message) {
     var successDiv = $("#success-message");
     successDiv.html(message).show().delay(5000).fadeOut();
 }
 
+// Show message on submit error
 function displayError(message) {
     if (message == "INVALID_COUNTRY") {
         message = "Enter country code";
@@ -63,6 +72,7 @@ function displayError(message) {
     errorDiv.html(message).show().delay(3000).fadeOut();
 }
 
+// Input field handler
 $("#phone-input").on("propertychange input", function (e) {
     var valueChanged = false;
 
@@ -71,9 +81,9 @@ $("#phone-input").on("propertychange input", function (e) {
     } else {
         valueChanged = true;
     }
+    // Validate and overwrite number on the fly
     if (valueChanged) {
         inputVal = e.target.value;
-        /* Code goes here */
         var code = "US";
         var selectedCode = $("#country-code").val();
         if (selectedCode === "US") {

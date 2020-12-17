@@ -24,21 +24,19 @@ clients = []
 
 #  ================== reCaptcha ==================
 def validate_recaptcha(token):
+    """Validate request using reCaptcha"""
     url = "https://www.google.com/recaptcha/api/siteverify"
     api_secret = os.getenv(
         "RECAPTCHA_SECRET")
     payload = {"secret": api_secret, "response": token}
     res = requests.post(url, params=payload)
-    print("=====Res=========", file=sys.stderr)
-    print(res.json(), file=sys.stderr)
-    print(res.json, file=sys.stderr)
     return res.json().get("success")
 
     #  ================== AWS ==================
 
 
 def db_client():
- # Load AWS credentials
+    """Load AWS credentials"""
     ACCESS_ID = os.getenv("AWS_KEY")
     ACCESS_KEY = os.getenv("AWS_SECRET")
 
@@ -88,6 +86,7 @@ def create_client(phone_number, role='', location=''):
 
 
 def update_row(clientId, key, value):
+    """Edit item row in DB"""
     table = db_client()
     response = table.update_item(
         Key={'Id': clientId},
