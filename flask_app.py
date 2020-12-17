@@ -346,9 +346,9 @@ def create_route():
     # Fetch clients from DB
     refresh_clients()
 
-    print("=======REQUEST=======", file=sys.stderr)
-    print(request.values, file=sys.stderr)
-    return "Done"
+    # Validate request
+    if not validate_recaptcha(request.values.get("recaptcha_token")):
+        return "Invalid request", 401
 
     # Validate phone number
     phone_number = request.values.get("phone")
