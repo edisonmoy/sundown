@@ -382,7 +382,7 @@ def incoming_text():
                 new_city = re.findall(
                     r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
                 output_msg = update_city(client_num, new_city)
-            elif input_msg == "help" | | input_msg == 'info':
+            elif input_msg == "help" or input_msg == 'info':
                 return
             else:
                 output_msg = "Sorry, we can't process your message. Reply HELP for more options."
