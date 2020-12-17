@@ -31,7 +31,7 @@ def validate_recaptcha(token):
     res = requests.post(url, params=payload)
     print("=====Res=========", file=sys.stderr)
     print(res, file=sys.stderr)
-    return res["success']
+    return res["success"]
 
     #  ================== AWS ==================
 
@@ -346,7 +346,7 @@ def create_route():
     # Fetch clients from DB
     refresh_clients()
 
-    print("=======REQUEST=======",file=sys.stderr)
+    print("=======REQUEST=======", file=sys.stderr)
     print(request, file=sys.stderr)
     return
 
