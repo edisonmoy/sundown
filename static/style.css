@@ -10,6 +10,9 @@ body {
 section {
     width: 100%;
 }
+.grecaptcha-badge {
+    visibility: hidden;
+}
 
 /* ================= Nav Section ================= */
 .nav-bar {

@@ -21,7 +21,19 @@ import uuid
 #  ================== Global Variables ==================
 clients = []
 
-#  ================== AWS ==================
+
+#  ================== reCaptcha ==================
+def validate_recaptcha(token):
+    url = "https://www.google.com/recaptcha/api/siteverify"
+    api_secret = os.getenv(
+        "RECAPTCHA_SECRET")
+    payload = {"secret": api_secret, "response": token}
+    res = requests.post(url, params=payload)
+    print("=====Res=========", file=sys.stderr)
+    print(res, file=sys.stderr)
+    return res["success']
+
+    #  ================== AWS ==================
 
 
 def db_client():
@@ -333,6 +345,10 @@ def render_index():
 def create_route():
     # Fetch clients from DB
     refresh_clients()
+
+    print("=======REQUEST=======",file=sys.stderr)
+    print(request, file=sys.stderr)
+    return
 
     # Validate phone number
     phone_number = request.values.get("phone")
