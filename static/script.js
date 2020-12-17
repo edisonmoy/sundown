@@ -24,7 +24,9 @@ $("#phone-submit").click(function () {
     async function submit(phoneNumber) {
         // Get reCaptcha token
         token = await grecaptcha.ready(function () {
-            grecaptcha.execute("reCAPTCHA_site_key", { action: "submit" });
+            grecaptcha.execute("6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7", {
+                action: "submit",
+            });
         });
 
         console.log("token: ", token);
