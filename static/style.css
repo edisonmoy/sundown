@@ -195,6 +195,7 @@ section {
     .title-container {
         padding: 0 2%;
     }
+    .right-display,
     .left-display {
         flex: 0 0 80%;
     }
