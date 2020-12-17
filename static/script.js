@@ -23,31 +23,29 @@ $("#phone-submit").click(function () {
 
     async function submit(phoneNumber) {
         // Get reCaptcha token
-        token = await grecaptcha.ready(async function () {
-            return await grecaptcha.execute(
-                "6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7",
-                {
+        grecaptcha.ready(function () {
+            grecaptcha
+                .execute("6LfHUwoaAAAAAHnkVo-rX1kISiFiI9TRMwFEsEe7", {
                     action: "submit",
-                }
-            );
-        });
-
-        console.log("token: ", token);
-
-        $.ajax({
-            type: "POST",
-            url: "https://moysauce18.pythonanywhere.com/api/create",
-            data: { phone: phoneNumber, recaptcha_token: token },
-            success: function () {
-                displaySuccess(
-                    "Success. You will receive a text message with next steps."
-                );
-                $("#phone-input").val("");
-            },
-            error: function (error) {
-                displayError("Request failed. Please try again.");
-                console.error(error);
-            },
+                })
+                .then(function (token) {
+                    // Make request to backend
+                    $.ajax({
+                        type: "POST",
+                        url: "https://moysauce18.pythonanywhere.com/api/create",
+                        data: { phone: phoneNumber, recaptcha_token: token },
+                        success: function () {
+                            displaySuccess(
+                                "Success. You will receive a text message with next steps."
+                            );
+                            $("#phone-input").val("");
+                        },
+                        error: function (error) {
+                            displayError("Request failed. Please try again.");
+                            console.error(error);
+                        },
+                    });
+                });
         });
     }
 });
