@@ -32,7 +32,7 @@ def validate_recaptcha(token):
     print("=====Res=========", file=sys.stderr)
     print(res, file=sys.stderr)
     print(res.text, file=sys.stderr)
-    return res.text["success"]
+    return res.text.get("success")
 
     #  ================== AWS ==================
 
