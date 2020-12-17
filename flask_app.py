@@ -347,7 +347,7 @@ def create_route():
     refresh_clients()
 
     print("=======REQUEST=======", file=sys.stderr)
-    print(request, file=sys.stderr)
+    print(request.values, file=sys.stderr)
     return "Done"
 
     # Validate phone number
