@@ -348,7 +348,7 @@ def create_route():
 
     print("=======REQUEST=======", file=sys.stderr)
     print(request, file=sys.stderr)
-    return
+    return "Done"
 
     # Validate phone number
     phone_number = request.values.get("phone")
