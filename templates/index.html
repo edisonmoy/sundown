@@ -1,35 +1,60 @@
 <!doctype html>
 <html lang="en-US">
 <link>
-<title>Sundown</title>
+<title>Sundown - Get sunset quality notifications</title>
+<link rel="icon" type="image/png" href="../static/assets/favicon.png">
 <meta charSet="UTF-8" />
 <link rel="stylesheet" href="../static/style.css">
-
 </head>
 
 <body>
-	<section class="title-container">
-		<div class="section-container">
-			<h1 class="title">Sundown</h1>
-			<p class="subtitle">Daily text notifications of the sunset quality.</p>
-			<div class="form-box">
-				<div class="form-box-container">
-					<p>Get Started</p>
-					<div>
-						<select name="country-code" id="country-code">
-							<option value="US">+1</option>
-							<option value=null>Other</option>
-						</select>
-						<input type="text" id="phone-input" name="phone" placeholder="Phone Number">
-						<button id="phone-submit">Submit</button>
-					</div>
-					<div id="message-container">
-						<span id="success-message"></span>
-						<span id="error-message"></span>
+	<section class="nav-bar">
+		<div class="nav-container">
+			<img class="logo" src="../static/assets/logo.png" alt="Sundown Logo" />
+		</div>
+	</section>
+	<section class="title-section">
+		<div class="title-container">
+			<div class="left-display">
+				<div class="left-container">
+					<h1 class="title">Daily sunset predictions,<br />right to your phone.</h1>
+					<p class="subtitle">Powered by <a href="https://sunsetwx.com/" target="_blank">SunsetWX</a> </p>
+
+					<div class="form-box">
+						<div class="form-box-container">
+							<h2 class="form-title">Get Started</h2>
+							<div>
+								<select name="country-code" id="country-code">
+									<option value="US">+1</option>
+									<option value=null>Other</option>
+								</select>
+								<input type="text" id="phone-input" name="phone" placeholder="Phone Number">
+								<button id="phone-submit">Submit</button>
+							</div>
+							<div id="message-container">
+								<span id="success-message"></span>
+								<span id="error-message"></span>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
-			<p>Built with the <a href="https://sunsetwx.com/" target="_blank">SunsetWX</a> API. </p>
+
+			<div class="right-display">
+
+				<img src="../static/assets/iphone.png" alt="Sundown iPhone" class="iphone" />
+
+			</div>
+
+		</div>
+	</section>
+	<section class=" footer">
+		<div class="footer-container">
+			<div class="price">
+				<p class="free">FREE FOREVER</p>
+				<p class="disclaimer">*Msg & data rates may apply</p>
+			</div>
+			<p class="contact">Contact moysauce18@gmail.com for support.</p>
 		</div>
 	</section>
 	<!-- Load scripts at end for faster loads -->

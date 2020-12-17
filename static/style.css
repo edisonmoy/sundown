@@ -1,19 +1,58 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap");
+/* ================= Shared Styles ================= */
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;600;700;800;900&display=swap");
 
 * {
     font-family: "Lato", sans-serif;
 }
+body {
+    margin: 0;
+}
 section {
     width: 100%;
 }
-.section-container {
-    padding: 40px 15%;
+
+/* ================= Nav Section ================= */
+.nav-bar {
+    height: 10vh;
 }
-.title-container .title {
-    font-size: 32px;
+.nav-container {
+    padding: 30px 6% 0;
 }
-.title-container .subtitle {
-    font-size: 24px;
+
+/* ================= Left Panel ================= */
+
+.title-section {
+    min-height: 80vh;
+}
+.title-container {
+    padding: 0 12%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+.left-display {
+    flex: 0 0 50%;
+}
+.right-display {
+    flex: 0 0 50%;
+}
+/* Left Side */
+.left-container {
+    padding-top: 10%;
+    padding-bottom: 50px;
+}
+
+.title-section .title {
+    margin-bottom: 0px;
+    font-weight: bold;
+    font-size: 40px;
+}
+.title-section .subtitle {
+    margin-top: 10px;
+    font-weight: 300;
+    font-size: 18px;
 }
 #error-message {
     color: red;
@@ -25,4 +64,138 @@ section {
 }
 #message-container {
     height: 15px;
+}
+.logo {
+    height: 100px;
+}
+.form-box {
+    margin-top: 60px;
+}
+.form-title {
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+#country-code {
+    background: #ffffff;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    height: 42px;
+    border: none;
+}
+#phone-input {
+    background: #ffffff;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    height: 22px;
+    padding: 10px;
+    border: none;
+}
+#phone-submit {
+    padding: 3px 20px;
+    height: 45px;
+    border: none;
+    background: #ec7676;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    color: white;
+    font-size: 22;
+}
+#phone-submit:hover {
+    cursor: pointer;
+    border: solid white 1px;
+}
+
+/* ================= Right Panel ================= */
+
+.iphone {
+    max-height: 80vh;
+}
+@media screen and (max-width: 991px) {
+    .iphone {
+        max-width: 60vw;
+        max-height: initial;
+    }
+}
+.repeat {
+    height: 1200px;
+    width: 1200px;
+    background: repeating-linear-gradient(
+        -30deg,
+        #82a0bc,
+        #82a0bc 30px,
+        #a7cced 30px,
+        #ec7676 30px
+    );
+}
+.bars {
+    z-index: -1;
+    overflow: hidden;
+    position: absolute;
+    bottom: -10px;
+    left: 1000;
+}
+.bar {
+    width: 28px;
+    height: 32px;
+    position: relative;
+}
+.bar:after {
+    content: "";
+    position: absolute;
+    border: 15px solid;
+    width: 100vw;
+    transform: rotate(-30deg);
+    transform-origin: 0% 0%;
+}
+.bar-darkblue:after {
+    border-color: #82a0bc;
+}
+.bar-lightblue:after {
+    border-color: #a7cced;
+}
+.bar-red:after {
+    border-color: #ec7676;
+}
+/* ================= Footer ================= */
+.footer {
+    height: 10vh;
+    background-color: black;
+    display: flex;
+    align-items: center;
+}
+.footer-container {
+    width: 100%;
+    padding: 0 6%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+.price {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+.price .free {
+    font-size: 22px;
+    color: white;
+    font-weight: 900;
+    margin-right: 30px;
+}
+.price .disclaimer {
+    font-size: 12px;
+    color: white;
+}
+.contact {
+    color: white;
+    font-size: 16px;
+    margin: 0;
+}
+@media screen and (max-width: 991px) {
+    .title-container {
+        padding: 0 2%;
+    }
+    .left-display {
+        flex: 0 0 80%;
+    }
 }
