@@ -323,7 +323,7 @@ def finish_creation(phone_number):
                "Account Created", str(datetime.datetime.now()))
     update_row(client_id, "Role", "User")
 
-    return "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text.\n\nReply HELP for more options"
+    return "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text.\n\nReply HELP for more options."
 
 
 #  ================== Routes ==================
