@@ -392,7 +392,7 @@ def incoming_text():
             elif input_msg == 'no':
                 output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state and country."
             else:
-                output_msg = validate_location(input_msg)
+                output_msg = validate_location(client_num, input_msg)
         # Check if response is from location update
         elif client_role == 'Updating':
             if input_msg == 'yes':
@@ -401,7 +401,7 @@ def incoming_text():
             elif input_msg == 'no':
                 output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state or country."
             else:
-                output_msg = validate_location(input_msg)
+                output_msg = validate_location(client_num, input_msg)
         else:
             # Send response given input message
             if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
