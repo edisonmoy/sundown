@@ -398,8 +398,7 @@ def incoming_text():
             if input_msg == 'yes':
                 update_row(client_id, "Role", "User")
                 output_msg = "Done. Your location has been updated to:" + client_curr_location
-            elif:
-                input_msg == 'no':
+            elif input_msg == 'no':
                 output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state or country."
             else:
                 output_msg = validate_location(input_msg)
