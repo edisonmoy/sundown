@@ -169,22 +169,6 @@ def send_msg(phone_number, msg):
 #  ================== Sunset ==================
 
 
-def update_city(client_num, new_city):
-    """
-    Given name of city and client's number,
-    update client's city in DB
-    Return string with success or error
-    """
-    curr_city = get_client_location(client_num)
-    if curr_city.lower() == new_city.lower():
-        return "Current city is already " + curr_city
-    else:
-        if (address_to_coord(new_city) == -1):
-            return "Invalid city. Current city is " + curr_city
-        update_row(get_client_id(client_num), 'Location', new_city)
-    return "City has been updated to " + new_city + '\n' + get_sunset(new_city)
-
-
 def address_to_coord(city_name):
     """Get coords of address"""
     geolocator = Nominatim(user_agent="sundown")
@@ -192,6 +176,15 @@ def address_to_coord(city_name):
     if location is None:
         return -1
     return (location.latitude, location.longitude)
+
+
+def cleaned_address(address):
+    """Get cleaned address"""
+    geolocator = Nominatim(user_agent="sundown")
+    location = geolocator.geocode(address)
+    if location is None:
+        return -1
+    return (location.address)
 
 
 def generate_grid(coord_tuple):
@@ -312,19 +305,25 @@ def begin_onboard(phone_number):
         send_msg(phone_number, msg)
         msg = "To begin, please respond with the name of your town or city:"
         send_msg(phone_number, msg)
-    return("Success")
+    return ("Success")
 
 
-def finish_creation(phone_number, location):
+def validate_location(phone_number, location):
+    """Update client location and verify that it is correct"""
+    location = cleaned_address(location)
+    update_row(get_client_id(phone_number), "Location", location)
+    return "(Yes/No) Is this the correct location? \n" + location
+
+
+def finish_creation(phone_number):
     """Update user info and complete account creation"""
     # Timestamp of account creation finished
-    update_row(get_client_id(phone_number),
+    client_id = get_client_id(phone_number)
+    update_row(client_id,
                "Account Created", str(datetime.datetime.now()))
-    update_row(get_client_id(phone_number), "Role", "User")
+    update_row(client_id, "Role", "User")
 
-    update_city(phone_number, location)
-    msg = "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
-    send_msg(phone_number, msg)
+    return "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
 
 
 #  ================== Routes ==================
@@ -377,7 +376,7 @@ def incoming_text():
 
         # Get requestor details
         client_num = request.values.get('From')
-        client_curr_city = get_client_location(client_num)
+        client_curr_location = get_client_location(client_num)
         client_role = get_client_role(client_num)
 
         # Timestamp of last received text
@@ -388,16 +387,31 @@ def incoming_text():
 
         # Check if response is from account creation
         if client_role == 'Pending':
-            output_msg = finish_creation(client_num, input_msg)
+            if input_msg == 'yes':
+                output_msg = finish_creation(client_num)
+            elif input_msg == 'no':
+                output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state and country."
+            else:
+                output_msg = validate_location(input_msg)
+        # Check if response is from location update
+        elif client_role == 'Updating':
+            if input_msg == 'yes':
+                update_row(client_id, "Role", "User")
+                output_msg = "Done. Your location has been updated to:" + client_curr_location
+            elif:
+                input_msg == 'no':
+                output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state or country."
+            else:
+                output_msg = validate_location(input_msg)
         else:
             # Send response given input message
             if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
-                output_msg = get_sunset(client_curr_city, True)
-
-            elif 'change city to' in input_msg:
-                new_city = re.findall(
-                    r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
-                output_msg = update_city(client_num, new_city)
+                output_msg = get_sunset(client_curr_location, True)
+            elif 'change location to' in input_msg or 'change city to' in input_msg:
+                location = re.findall(
+                    r'change location to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
+                update_row(client_id, "Role", "Updating")
+                output_msg = validate_location(client_num, location)
             elif input_msg == "help" or input_msg == 'info':
                 return
             else:
