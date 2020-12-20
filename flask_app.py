@@ -286,7 +286,7 @@ def get_sunset(address, from_grid=True):
     day = day_list[datetime.datetime.today().weekday()]
 
     # Create message
-    message = day + ' at ' + address + '\n' + 'Sunset at {}pm'.format(sunset_time.strftime(
+    message = day + ' at ' + address + '\n\nSunset at {}pm'.format(sunset_time.strftime(
         '%H:%M')) + '\nQuality: ' + quality + " " + str(round(quality_percent, 2)) + "%"
 
     return message
@@ -303,7 +303,7 @@ def begin_onboard(phone_number):
         create_client(phone_number, "Pending")
         msg = "Welcome to Sundown, the simple way to get daily notifications of the sunset quality."
         send_msg(phone_number, msg)
-        msg = "To begin, please respond with the name of your town or city:"
+        msg = "To begin, please respond with your location. You can reply with a street address, city and state or zipcode."
         send_msg(phone_number, msg)
     return ("Success")
 
@@ -312,7 +312,7 @@ def validate_location(phone_number, location):
     """Update client location and verify that it is correct"""
     location = cleaned_address(location)
     update_row(get_client_id(phone_number), "Location", location)
-    return "(Yes/No) Is this the correct location? \n" + location
+    return "(Yes/No) Is this the correct location? \n\n" + location
 
 
 def finish_creation(phone_number):
@@ -323,7 +323,7 @@ def finish_creation(phone_number):
                "Account Created", str(datetime.datetime.now()))
     update_row(client_id, "Role", "User")
 
-    return "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text. Reply HELP for more options"
+    return "Set up complete! You will now receive daily sunset texts. Reply SUNDOWN to get your first sunset quality text.\n\nReply HELP for more options"
 
 
 #  ================== Routes ==================
@@ -390,7 +390,7 @@ def incoming_text():
             if input_msg == 'yes':
                 output_msg = finish_creation(client_num)
             elif input_msg == 'no':
-                output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state and country."
+                output_msg = "Please input your location again. Add more specificity like street address, city, zip code, state and country."
             else:
                 output_msg = validate_location(client_num, input_msg)
         # Check if response is from location update
@@ -399,7 +399,7 @@ def incoming_text():
                 update_row(client_id, "Role", "User")
                 output_msg = "Done. Your location has been updated to:" + client_curr_location
             elif input_msg == 'no':
-                output_msg = "Please input your location again.\n Add more specificity like street address, city, zip code, state or country."
+                output_msg = "Please input your location again. Add more specificity like street address, city, zip code, state or country."
             else:
                 output_msg = validate_location(client_num, input_msg)
         else:
