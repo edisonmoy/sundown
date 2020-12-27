@@ -378,6 +378,7 @@ def incoming_text():
         client_num = request.values.get('From')
         client_curr_location = get_client_location(client_num)
         client_role = get_client_role(client_num)
+        client_id = get_client_id(client_num)
 
         # Timestamp of last received text
         update_row(get_client_id(client_num),
