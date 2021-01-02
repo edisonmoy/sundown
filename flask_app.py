@@ -131,8 +131,15 @@ def update_conversation(client_id, message):
     """Update dict of messages between server and client.
         Create new dictionary if does not exist"""
     table = db_client()
-    response = table.get_item(Key={'Id': client_id})
-    print(response['Item'], file=sys.stderr)
+    response = table.get_item(Key={'Id': client_id})['Item']
+    timestamp = str(datetime.datetime.now())
+    if 'Conversation' in response:
+        conversation = response['Conversation']
+        conversation[timestamp] = message
+    else:
+        conversation = {timestamp: message}
+    update_row(client_id, 'Conversation', conversation)
+    return response['Conversation']
 
 
 #  ================== Twilio ==================
