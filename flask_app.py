@@ -359,10 +359,9 @@ def render_index():
 # Route that creates a new user
 @ app.route("/api/create", methods=['POST'])
 def create_route():
-	print("ENTER=========", file=sys.stderr)
     # Fetch clients from DB
     refresh_clients()
-
+    print("ENTER=========", file=sys.stderr)
     # Validate request
     if not validate_recaptcha(request.values.get("recaptcha_token")):
         return "Invalid request", 401
