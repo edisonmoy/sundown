@@ -51,10 +51,8 @@ $("#phone-submit").click(function () {
 					});
 				})
 				.catch(function (err) {
-					console.log("HEre");
-					console.log(err);
-					err == null ? (err = "Request failed. Please try again.") : err;
-					displayError(err.message);
+					err = err == null ? "Request failed. Please try again." : err.message;
+					displayError(err);
 				});
 		});
 	}
