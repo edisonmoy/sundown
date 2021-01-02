@@ -2,7 +2,6 @@ from flask import Flask, request, session, render_template
 
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
-from twilio.http.http_client import TwilioHttpClient
 from twilio.request_validator import RequestValidator
 
 from functools import wraps
@@ -358,7 +357,6 @@ def render_index():
 def create_route():
     # Fetch clients from DB
     refresh_clients()
-    print("ENTER=========", file=sys.stderr)
     # Validate request
     if not validate_recaptcha(request.values.get("recaptcha_token")):
         return "Invalid request", 401
