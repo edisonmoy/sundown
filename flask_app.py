@@ -170,11 +170,8 @@ def validate_twilio_request(f):
 
 def send_msg(phone_number, msg):
     """Send text MSG to PHONE_NUM"""
-    proxy_client = TwilioHttpClient()
-    proxy_client.session.proxies = {'https': os.environ['https_proxy']}
-
     client = Client(os.getenv("TWILIO_AUTH_SID"),
-                    os.getenv("TWILIO_AUTH_TOKEN"), http_client=proxy_client)
+                    os.getenv("TWILIO_AUTH_TOKEN"))
     client.messages.create(
         body=msg,
         from_='++18057068922',
