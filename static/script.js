@@ -33,7 +33,7 @@ $("#phone-submit").click(function () {
 					// Make request to backend
 					$.ajax({
 						type: "POST",
-						url: "https://sundown.fun/api/create",
+						url: "https://www.sundown.fun/api/create",
 						data: {
 							phone: phoneNumber,
 							recaptcha_token: token,
