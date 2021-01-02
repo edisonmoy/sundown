@@ -131,7 +131,7 @@ def update_conversation(client_id, message):
     """Update dict of messages between server and client.
         Create new dictionary if does not exist"""
     table = db_client()
-    response = table.get_item(Key={'id': client_id})
+    response = table.get_item(Key={'Id': client_id})
     print(response['Item'], file=sys.stderr)
 
 
