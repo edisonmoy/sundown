@@ -85,11 +85,11 @@ def create_client(phone_number, role='', location=''):
     return response
 
 
-def update_row(clientId, key, value):
+def update_row(client_id, key, value):
     """Edit item row in DB"""
     table = db_client()
     response = table.update_item(
-        Key={'Id': clientId},
+        Key={'Id': client_id},
         UpdateExpression="set #KEY = :VALUE",
         ExpressionAttributeNames={
             '#KEY': key,
@@ -139,7 +139,7 @@ def update_conversation(client_id, message):
     else:
         conversation = {timestamp: message}
     update_row(client_id, 'Conversation', conversation)
-    return response['Conversation']
+    return conversation
 
 
 #  ================== Twilio ==================
