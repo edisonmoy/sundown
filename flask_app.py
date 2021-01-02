@@ -395,11 +395,6 @@ def incoming_text():
         # Update conversation dict with request
         update_conversation(client_id, input_msg)
 
-        update_row(get_client_id(client_num),
-                   "Last Received Message Timestamp", str(datetime.datetime.now()))
-        update_row(get_client_id(client_num),
-                   "Last Received Message", input_msg)
-
         # Check if response is from account creation
         if client_role == 'Pending':
             if input_msg == 'yes':
