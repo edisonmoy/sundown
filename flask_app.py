@@ -420,15 +420,9 @@ def incoming_text():
             if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
                 output_msg = get_sunset(client_curr_location, True)
 
-                # Update Location
-            elif 'change location to' in input_msg:
-                location = re.findall(
-                    r'change location to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
-                update_row(client_id, "Role", "Updating")
-                output_msg = validate_location(client_num, location)
-                elif 'change city to' in input_msg:
-                    location = re.findall(
-                        r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
+            # Update Location
+            elif 'change location to' in input_msg or 'change city to' in input_msg:
+                location = input_msg.split(' ', 3)[3]
                 update_row(client_id, "Role", "Updating")
                 output_msg = validate_location(client_num, location)
 
