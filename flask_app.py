@@ -126,6 +126,16 @@ def get_client_id(phone_number):
             return client["Id"]
     return None
 
+
+def update_conversation(client_id, message):
+    """Update dict of messages between server and client.
+        Create new dictionary if does not exist"""
+    table = db_client()
+    response = table.get_item(Key={'id': client_id})
+    if response['Item']
+    print(response['Item'], file=sys.stderr)
+
+
 #  ================== Twilio ==================
 
 
@@ -164,6 +174,7 @@ def send_msg(phone_number, msg):
         from_='++18057068922',
         to=phone_number
     )
+    update_conversation(get_client_id(phone_number), msg)
     return '"{}" sent to {}'.format(msg, phone_number)
 
 #  ================== Sunset ==================
@@ -312,7 +323,7 @@ def validate_location(phone_number, location):
     """Update client location and verify that it is correct"""
     location = cleaned_address(location)
     update_row(get_client_id(phone_number), "Location", location)
-    return "(Yes/No) Is this the correct location? \n\n" + location
+    return "(Yes/No) Is this the correct location? \n\n" + str(location)
 
 
 def finish_creation(phone_number):
@@ -380,7 +391,9 @@ def incoming_text():
         client_role = get_client_role(client_num)
         client_id = get_client_id(client_num)
 
-        # Timestamp of last received text
+        # Update conversation dict with request
+        update_conversation(client_id, input_msg)
+
         update_row(get_client_id(client_num),
                    "Last Received Message Timestamp", str(datetime.datetime.now()))
         update_row(get_client_id(client_num),
@@ -404,20 +417,32 @@ def incoming_text():
             else:
                 output_msg = validate_location(client_num, input_msg)
         else:
-            # Send response given input message
+            # Refresh
             if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
                 output_msg = get_sunset(client_curr_location, True)
-            elif 'change location to' in input_msg or 'change city to' in input_msg:
+
+                # Update Location
+            elif 'change location to' in input_msg:
                 location = re.findall(
                     r'change location to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
                 update_row(client_id, "Role", "Updating")
                 output_msg = validate_location(client_num, location)
+                elif 'change city to' in input_msg:
+                    location = re.findall(
+                        r'change city to (([a-zA-Z]*\s*)*)', input_msg)[0][0]
+                update_row(client_id, "Role", "Updating")
+                output_msg = validate_location(client_num, location)
+
+                # Get Help
             elif input_msg == "help" or input_msg == 'info':
                 return
             else:
                 output_msg = "Sorry, we can't process your message. Reply HELP for more options."
     else:
         output_msg = "Sorry, we can't process your message. Reply HELP for more options."
+
+    # Update conversation dict with response
+        update_conversation(client_id, output_msg)
 
     # Put it in a TwiML response
     resp = MessagingResponse()
