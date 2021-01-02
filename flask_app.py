@@ -442,7 +442,7 @@ def incoming_text():
         output_msg = "Sorry, we can't process your message. Reply HELP for more options."
 
     # Update conversation dict with response
-        update_conversation(client_id, output_msg)
+    update_conversation(client_id, output_msg)
 
     # Put it in a TwiML response
     resp = MessagingResponse()
