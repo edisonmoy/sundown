@@ -51,7 +51,8 @@ $("#phone-submit").click(function () {
 					});
 				})
 				.catch(function (err) {
-					console.error(err);
+					console.log("HEre");
+					console.log(err);
 					displayError(err.message);
 				});
 		});
