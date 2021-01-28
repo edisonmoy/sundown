@@ -16,6 +16,13 @@ from geopy.geocoders import Nominatim, GeoNames
 import os
 import phonenumbers
 import uuid
+import threading
+import schedule
+from dotenv import load_dotenv
+import time
+
+
+load_dotenv()
 
 #  ================== Global Variables ==================
 clients = []
@@ -303,6 +310,35 @@ def get_sunset(address, from_grid=True):
         '%H:%M')) + '\nQuality: ' + quality + " " + str(round(quality_percent, 2)) + "%"
 
     return message
+
+
+#  ================== Schedule Send ==================
+def schedule_send():
+    '''
+    Send update to each client
+    '''
+    refresh_clients()
+    for client in clients:
+        location = client['Location']
+        phone = client['Phone']
+        msg = get_sunset(location)
+        send_msg(phone, msg)
+    return len(clients)
+
+
+def run_scheduler():
+    '''
+    Continuously run to send messages at same time each day
+    '''
+    time_to_send = "14:00"
+    schedule.every().day.at(time_to_send).do(schedule_send)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+scheduler = threading.Thread(target=run_scheduler)
+scheduler.start()
 
 
 #  ================== Account Creation ==================
