@@ -332,7 +332,7 @@ def run_scheduler():
     Continuously run to send messages at same time each day
     '''
     # time_to_send = "14:00"
-    time_to_send = "15:10"
+    time_to_send = "15:12"
     schedule.every().day.at(time_to_send).do(schedule_send)
     while True:
         schedule.run_pending()
