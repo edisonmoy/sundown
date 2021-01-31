@@ -344,7 +344,7 @@ def run_scheduler():
         print("loop", file=sys.stderr)
         print(schedule, file=sys.stderr)
         schedule.run_pending()
-        time.sleep(1)
+        # time.sleep(1)
 
 
 scheduler = threading.Thread(target=run_scheduler)
