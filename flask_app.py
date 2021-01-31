@@ -1,4 +1,4 @@
-from flask import Flask, request, session, render_template
+from flask import Flask, request, render_template
 
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
@@ -10,16 +10,13 @@ import re
 import sys
 import requests
 import datetime
-from suntime import Sun, SunTimeException
+from suntime import Sun
 from dateutil import tz
 from geopy.geocoders import Nominatim, GeoNames
 import os
 import phonenumbers
 import uuid
-import threading
-import schedule
 from dotenv import load_dotenv
-import time
 
 
 load_dotenv()
@@ -313,43 +310,6 @@ def get_sunset(address, from_grid=True):
         '%H:%M')) + '\nQuality: ' + quality + " " + str(round(quality_percent, 2)) + "%"
 
     return message
-
-
-#  ================== Schedule Send ==================
-def schedule_send():
-    print("scheduler send", file=sys.stderr)
-
-    '''
-    Send update to each client
-    '''
-    refresh_clients()
-    for client in clients:
-        location = client['Location']
-        phone = client['Phone']
-        msg = get_sunset(location)
-        # send_msg(phone, msg)
-    send_msg("+19739759395", "hello")
-    return len(clients)
-
-
-def run_scheduler():
-    '''
-    Continuously run to send messages at same time each day
-    '''
-    # time_to_send = "14:00"
-    time_to_send = "17:18"
-    print("scheduler on", file=sys.stderr)
-    schedule.every().day.at(time_to_send).do(schedule_send)
-    while True:
-        print("loop", file=sys.stderr)
-        print(schedule, file=sys.stderr)
-        schedule.run_pending()
-        # time.sleep(1)
-
-
-scheduler = threading.Thread(target=run_scheduler)
-scheduler.start()
-print("server up", file=sys.stderr)
 
 
 #  ================== Account Creation ==================
