@@ -337,7 +337,7 @@ def run_scheduler():
     Continuously run to send messages at same time each day
     '''
     # time_to_send = "14:00"
-    time_to_send = "17:07"
+    time_to_send = "17:09"
     send_msg("+19739759395", "scheduler on")
     schedule.every().day.at(time_to_send).do(schedule_send)
     while True:
