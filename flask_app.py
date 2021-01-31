@@ -183,7 +183,10 @@ def send_msg(phone_number, msg):
         from_='++18057068922',
         to=phone_number
     )
-    update_conversation(get_client_id(phone_number), msg)
+    try:
+        update_conversation(get_client_id(phone_number), msg)
+    except:
+        pass
     return '"{}" sent to {}'.format(msg, phone_number)
 
 #  ================== Sunset ==================
