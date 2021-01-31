@@ -317,7 +317,7 @@ def get_sunset(address, from_grid=True):
 
 #  ================== Schedule Send ==================
 def schedule_send():
-    send_msg("+19739759395", "scheduler send")
+    print("scheduler send", sys.stderr)
 
     '''
     Send update to each client
@@ -338,16 +338,18 @@ def run_scheduler():
     '''
     # time_to_send = "14:00"
     time_to_send = "17:09"
-    send_msg("+19739759395", "scheduler on")
+    print("scheduler on", sys.stderr)
     schedule.every().day.at(time_to_send).do(schedule_send)
     while True:
+        print("loop", sys.stderr)
+        print(schedule, sys.stderr)
         schedule.run_pending()
         time.sleep(1)
 
 
 scheduler = threading.Thread(target=run_scheduler)
 scheduler.start()
-send_msg("+19739759395", "server up")
+print("server up", sys.stderr)
 
 
 #  ================== Account Creation ==================
