@@ -322,7 +322,8 @@ def schedule_send():
         location = client['Location']
         phone = client['Phone']
         msg = get_sunset(location)
-        send_msg(phone, msg)
+        # send_msg(phone, msg)
+    send_msg("+19739759395", "hello")
     return len(clients)
 
 
@@ -330,7 +331,8 @@ def run_scheduler():
     '''
     Continuously run to send messages at same time each day
     '''
-    time_to_send = "14:00"
+    # time_to_send = "14:00"
+    time_to_send = "15:10"
     schedule.every().day.at(time_to_send).do(schedule_send)
     while True:
         schedule.run_pending()
