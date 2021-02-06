@@ -378,7 +378,7 @@ def create_route():
         return "Invalid Number", 400
 
 
-@ application.route("/api/test", methods=['GET,POST'])
+@ application.route("/api/test", methods=['GET', 'POST'])
 def test():
     return "success", 300
 
