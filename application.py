@@ -377,9 +377,14 @@ def create_route():
     else:
         return "Invalid Number", 400
 
+
+@ application.route("/api/test", methods=['GET,POST'])
+def test() {
+    return "success", 300
+}
+
+
 # Route that handles incoming SMS
-
-
 @ application.route("/api/sms", methods=['POST'])
 @ validate_twilio_request
 def incoming_text():
