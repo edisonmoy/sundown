@@ -379,9 +379,8 @@ def create_route():
 
 
 @ application.route("/api/test", methods=['GET,POST'])
-def test() {
+def test():
     return "success", 300
-}
 
 
 # Route that handles incoming SMS
