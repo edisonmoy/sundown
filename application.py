@@ -429,11 +429,9 @@ def incoming_text():
             else:
                 output_msg = validate_location(client_num, input_msg)
         else:
-            # Refresh
-            if input_msg == "refresh" or input_msg == "update" or input_msg == "sunset" or input_msg == "sundown":
-                output_msg = get_sunset(client_curr_location, True)
 
-            elif "sunset in" in input_msg:
+            # Get sundown in specified location
+            if "sunset in" in input_msg or "sunset at" in input_msg or "sundown in" in input_msg or "sundown at" in input_msg:
                 location = input_msg.split(" ", 2)[2]
                 output_msg = get_sunset(location, True)
 
@@ -448,6 +446,10 @@ def incoming_text():
                 location = input_msg.split(" ", 2)[2]
                 update_row(client_id, "Role", "Updating")
                 output_msg = validate_location(client_num, location)
+
+             # Refresh
+            elif input_msg == "refresh" or input_msg == "update" or input_msg == "sunset" or input_msg == "sundown":
+                output_msg = get_sunset(client_curr_location, True)
 
                 # Get Help
             elif input_msg == "help" or input_msg == "info":
