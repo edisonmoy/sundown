@@ -43,22 +43,22 @@ def db_client():
     ACCESS_ID = os.getenv("AWS_KEY")
     ACCESS_KEY = os.getenv("AWS_SECRET")
 
-    dynamodb = boto3.resource('dynamodb',
+    dynamodb = boto3.resource("dynamodb",
                               region_name="us-west-1",
                               aws_access_key_id=ACCESS_ID,
                               aws_secret_access_key=ACCESS_KEY
                               )
-    return dynamodb.Table('SunsetClients')
+    return dynamodb.Table("SunsetClients")
 
 
 def refresh_clients():
     """Get clients from DynamoDB"""
     table = db_client()
     response = table.scan()
-    all_clients = response['Items']
-    while 'LastEvaluatedKey' in response:
-        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        all_clients.extend(response['Items'])
+    all_clients = response["Items"]
+    while "LastEvaluatedKey" in response:
+        response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+        all_clients.extend(response["Items"])
     global clients
     clients = all_clients
 
@@ -74,15 +74,15 @@ def client_exists(phone_number):
     return False
 
 
-def create_client(phone_number, role='', location=''):
+def create_client(phone_number, role="", location=""):
     """Create new row in DB with client info"""
     table = db_client()
     response = table.put_item(
         Item={
-            'Id': str(uuid.uuid4()),
-            'Phone': phone_number,
-            'Role': role,
-            'Location': location,
+            "Id": str(uuid.uuid4()),
+            "Phone": phone_number,
+            "Role": role,
+            "Location": location,
         }
     )
     return response
@@ -92,13 +92,13 @@ def update_row(client_id, key, value):
     """Edit item row in DB"""
     table = db_client()
     response = table.update_item(
-        Key={'Id': client_id},
+        Key={"Id": client_id},
         UpdateExpression="set #KEY = :VALUE",
         ExpressionAttributeNames={
-            '#KEY': key,
+            "#KEY": key,
         },
         ExpressionAttributeValues={
-            ':VALUE': value
+            ":VALUE": value
         }, ReturnValues="UPDATED_NEW")
     return response
 
@@ -134,14 +134,14 @@ def update_conversation(client_id, message):
     """Update dict of messages between server and client.
         Create new dictionary if does not exist"""
     table = db_client()
-    response = table.get_item(Key={'Id': client_id})['Item']
+    response = table.get_item(Key={"Id": client_id})["Item"]
     timestamp = str(datetime.datetime.now())
-    if 'Conversation' in response:
-        conversation = response['Conversation']
+    if "Conversation" in response:
+        conversation = response["Conversation"]
         conversation[timestamp] = message
     else:
         conversation = {timestamp: message}
-    update_row(client_id, 'Conversation', conversation)
+    update_row(client_id, "Conversation", conversation)
     return conversation
 
 
@@ -153,14 +153,14 @@ def validate_twilio_request(f):
     @ wraps(f)
     def decorated_function(*args, **kwargs):
         # Create an instance of the RequestValidator class
-        validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
+        validator = RequestValidator(os.environ.get("TWILIO_AUTH_TOKEN"))
 
         # Validate the request using its URL, POST data,
         # and X-TWILIO-SIGNATURE header
         request_valid = validator.validate(
             request.url,
             request.form,
-            request.headers.get('X-TWILIO-SIGNATURE', ''))
+            request.headers.get("X-TWILIO-SIGNATURE", ""))
 
         # Continue processing the request if it's valid, return a 403 error if
         # it's not
@@ -177,7 +177,7 @@ def send_msg(phone_number, msg):
                     os.getenv("TWILIO_AUTH_TOKEN"))
     client.messages.create(
         body=msg,
-        from_='++18057068922',
+        from_="++18057068922",
         to=phone_number
     )
     try:
@@ -276,16 +276,16 @@ def get_sunset(address, from_grid=True):
         total += float(quality_percent)
 
     quality_percent = total / float(len(coords_list))
-    quality = ''
+    quality = ""
 
     if quality_percent < 25:
-        quality = 'Poor'
+        quality = "Poor"
     elif quality_percent < 50:
-        quality = 'Fair'
+        quality = "Fair"
     elif quality_percent < 75:
-        quality = 'Good'
+        quality = "Good"
     else:
-        quality = 'Great'
+        quality = "Great"
 
     # Get today's sunset in local time
     sun = Sun(coords[0], coords[1])
@@ -295,7 +295,7 @@ def get_sunset(address, from_grid=True):
     GEO_USERNAME = os.getenv("GEONAMES_USERNAME")
     geolocator = GeoNames(username=GEO_USERNAME)
     timezone = geolocator.reverse_timezone(coords)
-    from_zone = tz.gettz('UTC')
+    from_zone = tz.gettz("UTC")
     to_zone = tz.gettz(str(timezone))
     today_ss = today_ss.replace(tzinfo=from_zone)
     sunset_time = today_ss.astimezone(to_zone)
@@ -306,8 +306,8 @@ def get_sunset(address, from_grid=True):
     day = day_list[datetime.datetime.today().weekday()]
 
     # Create message
-    message = day + ' at ' + address + '\n\nSunset at {}pm'.format(sunset_time.strftime(
-        '%H:%M')) + '\nQuality: ' + quality + " " + str(round(quality_percent, 2)) + "%"
+    message = "Quality: " + quality + " " + str(round(quality_percent, 2)) + "%\nSunset at {}pm".format(
+        sunset_time.strftime("%H:%M")) + "\n\n" + day + " at " + address
 
     return message
 
@@ -352,7 +352,7 @@ application.config.from_object(__name__)
 
 
 # Route that serves all requests
-@ application.route("/", methods=['GET', 'POST'])
+@ application.route("/", methods=["GET", "POST"])
 def render_index():
     # Fetch clients from DB
     # refresh_clients()
@@ -360,7 +360,7 @@ def render_index():
 
 
 # Route that creates a new user
-@ application.route("/api/create", methods=['POST'])
+@ application.route("/api/create", methods=["POST"])
 def create_route():
     # Fetch clients from DB
     refresh_clients()
@@ -378,13 +378,13 @@ def create_route():
         return "Invalid Number", 400
 
 
-@ application.route("/api/test", methods=['GET', 'POST'])
+@ application.route("/api/test", methods=["GET", "POST"])
 def test():
     return "success", 300
 
 
 # Route that handles incoming SMS
-@ application.route("/api/sms", methods=['POST'])
+@ application.route("/api/sms", methods=["POST"])
 @ validate_twilio_request
 def incoming_text():
 
@@ -396,10 +396,10 @@ def incoming_text():
 
         input_msg = request.values.get("Body")
         # Clean string
-        input_msg = input_msg.replace('+', ' ').lower().lstrip().rstrip()
+        input_msg = input_msg.replace("+", " ").lower().lstrip().rstrip()
 
         # Get requestor details
-        client_num = request.values.get('From')
+        client_num = request.values.get("From")
         client_curr_location = get_client_location(client_num)
         client_role = get_client_role(client_num)
         client_id = get_client_id(client_num)
@@ -408,35 +408,49 @@ def incoming_text():
         update_conversation(client_id, input_msg)
 
         # Check if response is from account creation
-        if client_role == 'Pending':
-            if input_msg == 'yes':
+        if client_role == "Pending":
+            if input_msg == "yes":
                 output_msg = finish_creation(client_num)
-            elif input_msg == 'no':
+            elif input_msg == "no":
                 output_msg = "Please input your location again. Add more specificity like street address, city, zip code, state and country."
             else:
                 output_msg = validate_location(client_num, input_msg)
         # Check if response is from location update
-        elif client_role == 'Updating':
-            if input_msg == 'yes':
+        elif client_role == "Updating":
+            if input_msg == "yes":
                 update_row(client_id, "Role", "User")
-                output_msg = "Your location has been updated to:\n" + client_curr_location
-            elif input_msg == 'no':
+                # Reply with locatio update confirmation and new prediction
+                output_msg = "Your location has been updated to:\n" + \
+                    client_curr_location + "\n\n" + \
+                    get_sunset(client_curr_location, True)
+
+            elif input_msg == "no":
                 output_msg = "Please input your location again. Add more specificity like street address, city, zip code, state or country."
             else:
                 output_msg = validate_location(client_num, input_msg)
         else:
             # Refresh
-            if input_msg == 'refresh' or input_msg == 'update' or input_msg == 'sunset' or input_msg == "sundown":
+            if input_msg == "refresh" or input_msg == "update" or input_msg == "sunset" or input_msg == "sundown":
                 output_msg = get_sunset(client_curr_location, True)
 
+            elif "sunset in" in input_msg:
+                location = input_msg.split(" ", 2)[2]
+                output_msg = get_sunset(location, True)
+
             # Update Location
-            elif 'change location to' in input_msg or 'change city to' in input_msg:
-                location = input_msg.split(' ', 3)[3]
+            elif "change location to" in input_msg or "change city to" in input_msg:
+                location = input_msg.split(" ", 3)[3]
+                update_row(client_id, "Role", "Updating")
+                output_msg = validate_location(client_num, location)
+
+            # Update Location
+            elif "change to" in input_msg:
+                location = input_msg.split(" ", 2)[2]
                 update_row(client_id, "Role", "Updating")
                 output_msg = validate_location(client_num, location)
 
                 # Get Help
-            elif input_msg == "help" or input_msg == 'info':
+            elif input_msg == "help" or input_msg == "info":
                 return
             else:
                 output_msg = "Sorry, we can't process your message. Reply HELP for more options."
