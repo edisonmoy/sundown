@@ -416,8 +416,7 @@ def incoming_text():
             if input_msg == "yes":
                 update_row(client_id, "Role", "User")
                 # Reply with locatio update confirmation and new prediction
-                output_msg = "Your location has been updated to:\n" + \
-                    client_curr_location + "\n\n" + \
+                output_msg = "Your location has been updated.\n\n" + \
                     get_sunset(client_curr_location, True)
             elif input_msg == "no":
                 output_msg = "Please input your location again. Add more specificity like street address, city, zip code, state or country."
@@ -428,7 +427,12 @@ def incoming_text():
             # Get sundown in specified location
             if "sunset in" in input_msg or "sunset at" in input_msg or "sundown in" in input_msg or "sundown at" in input_msg:
                 location = input_msg.split(" ", 2)[2]
-                output_msg = get_sunset(location, True)
+                cleaned_location = cleaned_address(location)
+
+                if cleaned_location == -1:
+                    output_msg = "Can't find location: " + location
+                else:
+                    output_msg = get_sunset(cleaned_location, True)
 
             # Update Location
             elif "change location to" in input_msg or "change city to" in input_msg:
